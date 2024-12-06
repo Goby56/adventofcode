@@ -21,7 +21,48 @@ pub fn part_two(input: &str) -> Option<u32> {
     let puzzle: Vec<Vec<char>> = input.lines()
         .map(|line| line.chars().collect())
         .collect();
-    None
+    let mut x_mases = 0;
+    for r in 0..puzzle.len() {
+        for c in 0..puzzle[0].len() {
+            if has_x(r, c, &puzzle) {
+                x_mases += 1;
+            }
+        }
+    }
+    Some(x_mases)
+}
+
+pub fn has_x(row: usize, column: usize, puzzle: &Vec<Vec<char>>) -> bool {
+    if puzzle[row][column] != 'A' {
+        return false;
+    }
+    if row == 0 || row == puzzle.len() - 1 ||
+        column == 0 || column == puzzle[0].len() - 1 {
+        return false;
+    }
+    let c = column as i32;
+    for i in [-1i32, 1] {
+        for char in ['M', 'S'] {
+            let top = puzzle[row-1][(c+i) as usize];
+            let bottom = puzzle[row+1][(c-i) as usize];
+            if let Some(opposite) = other_char(top) {
+                if top == char && bottom != opposite {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+pub fn other_char(c: char) -> Option<char> {
+    match c {
+        'M' => Some('S'),
+        'S' => Some('M'),
+        _ => None
+    }
 }
 
 pub fn search_axes(row: usize, column: usize, puzzle: &Vec<Vec<char>>) -> u32 {
@@ -92,6 +133,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(9));
     }
 }
